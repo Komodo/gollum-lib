@@ -14,7 +14,6 @@ module Gollum
       @page_file_dir = page_file_dir
       @path          = path
       @repo = Gollum::Git::Repo.new(path, { :is_bare => bare })
-      clear
     end
 
     # Public: Determines whether the Git repository exists on disk.
@@ -89,9 +88,7 @@ module Gollum
     #
     # Returns nothing.
     def clear
-      @ref_map    = {}
-      @tree_map   = {}
-      @commit_map = {}
+      Gollum.cache.clear
     end
 
     # Public: Refreshes just the cached Git reference data.  This should
@@ -99,7 +96,7 @@ module Gollum
     #
     # Returns nothing.
     def refresh
-      @ref_map.clear
+      clear
     end
 
     #########################################################################
@@ -198,13 +195,8 @@ module Gollum
     #
     # Yields a block to pass to the cache.
     # Returns the cached result.
-    def get_cache(name, key)
-      cache = instance_variable_get("@#{name}_map")
-      value = cache[key]
-      if value.nil? && block_given?
-        set_cache(name, key, value = yield)
-      end
-      value == :_nil ? nil : value
+    def get_cache(name, key, &block)
+      Gollum.cache.fetch("#{name}_#{key}", &block)
     end
 
     # Writes some data to the internal cache.
@@ -215,8 +207,7 @@ module Gollum
     #
     # Returns nothing.
     def set_cache(name, key, value)
-      cache      = instance_variable_get("@#{name}_map")
-      cache[key] = value || :_nil
+      Gollum.cache.write("#{name}_#{key}", value)
     end
 
     # Parses a line of output from the `ls-tree` command.
