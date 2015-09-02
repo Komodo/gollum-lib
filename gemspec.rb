@@ -8,7 +8,7 @@ def specification(version, default_adapter, platform = nil)
     s.name              = 'gollum-lib'
     s.version           = version
     s.platform          = platform if platform
-    s.date              = '2015-08-09'
+    s.date              = '2015-09-02'
     s.rubyforge_project = 'gollum-lib'
     s.license           = 'MIT'
 
@@ -64,6 +64,7 @@ def specification(version, default_adapter, platform = nil)
     gollum-lib_java.gemspec
     lib/gollum-lib.rb
     lib/gollum-lib/blob_entry.rb
+    lib/gollum-lib/cache.rb
     lib/gollum-lib/committer.rb
     lib/gollum-lib/file.rb
     lib/gollum-lib/file_view.rb
