@@ -219,16 +219,11 @@ module Gollum
     def formatted_data(encoding = nil, include_levels = 10, &block)
       return nil unless @blob
 
-      if @formatted_data && @doc then
-        yield @doc if block_given?
-      else
-        @formatted_data = markup_class.render(historical?, encoding, include_levels) do |doc|
-          @doc = doc
-          yield doc if block_given?
-        end
-      end
-
-      @formatted_data
+      @doc ||= Gollum.cache.fetch("gollum:page:doc:#{page_cache_suffix}") {
+        markup_class.render(historical?, encoding, include_levels)
+      }
+      return yield(@doc) if block_given?
+      @doc
     end
 
     # Public: The table of contents of the page.
@@ -467,25 +462,38 @@ module Gollum
       name = "_#{name.to_s.capitalize}"
       return nil if page_match(name, self.filename)
 
-      dirs = self.path.split('/')
-      dirs.pop
-      map = @wiki.tree_map_for(@wiki.ref, true)
-      while !dirs.empty?
-        if (page = find_page_in_tree(map, name, dirs.join('/')))
-          page.parent_page = self
-          return page
-        end
-        dirs.pop
-      end
+      key = "gollum:page:sub:#{page_cache_suffix}"
 
-      if (page = find_page_in_tree(map, name, ''))
-        page.parent_page = self
+      Gollum.cache.fetch(key) do
+        dirs = self.path.split('/')
+        dirs.pop
+        map = @wiki.tree_map_for(@wiki.ref, true)
+        page = nil
+
+        while !dirs.empty?
+          if page = find_page_in_tree(map, name, dirs.join('/'))
+            page.parent_page = self
+            break
+          end
+          dirs.pop
+        end
+
+        if page.nil? && page = find_page_in_tree(map, name, '')
+          page.parent_page = self
+        end
+
+        page
       end
-      page
     end
 
     def inspect
       %(#<#{self.class.name}:#{object_id} #{name} (#{format}) @wiki=#{@wiki.repo.path.inspect}>)
+    end
+
+    private
+
+    def page_cache_suffix
+      Page.cname(self.path).downcase
     end
   end
 end
