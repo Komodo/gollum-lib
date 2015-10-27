@@ -31,7 +31,7 @@ module Gollum
     def new_sub_folder(path)
       <<-HTML
       <li>
-        <label>#{path}</label> <input type="checkbox" #{@checked} />
+        <label for="#{path}">#{path}</label> <input id="#{path}" type="checkbox" #{@checked} />
         <ol>
       HTML
     end
