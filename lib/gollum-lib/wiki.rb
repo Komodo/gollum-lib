@@ -169,6 +169,8 @@ module Gollum
     # the documentation for Gollum::Filter for more on how this chain
     # works, and what filter classes need to implement.
     attr_reader :filter_chain
+    
+    attr_reader :versions
 
     # Public: Initialize a new Gollum Repo.
     #
@@ -249,6 +251,7 @@ module Gollum
       @per_page_uploads     = options.fetch :per_page_uploads, false
       @filter_chain         = options.fetch :filter_chain,
                                             [:Metadata, :PlainText, :TOC, :RemoteCode, :Code, :Macro, :Sanitize, :WSD, :PlantUML, :Tags, :Render]
+      @versions             = options.fetch :versions, []
     end
 
     # Public: check whether the wiki's git repo exists on the filesystem.
