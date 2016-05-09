@@ -308,7 +308,14 @@ class Gollum::Filter::Tags < Gollum::Filter
       path = cname[0..slash]
       page = @markup.wiki.paged(name, path)
     else
-      page = @markup.wiki.paged(cname, '/') || @markup.wiki.page(cname)
+      parent = File.join(@markup.dir, File.basename(@markup.name, File.extname(@markup.name)))
+      page = @markup.wiki.paged(cname, parent)
+      unless page
+        page = @markup.wiki.paged(cname, @markup.dir)
+      end
+      unless page
+        page = @markup.wiki.page(cname)
+      end
     end
 
     if page
